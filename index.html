@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FitPulse — Fitness Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --a:#00ff87;--a2:#ff4d6d;--bg:#0a0a0f;--s:#13131a;--s2:#1c1c28;
+  --b:rgba(255,255,255,0.08);--t:#f0f0f5;--m:#6b6b80;
+  --D:'Bebas Neue',sans-serif;--F:'DM Sans',sans-serif;--r:14px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;}
+body{background:var(--bg);color:var(--t);font-family:var(--F);min-height:100vh;}
+
+/* ── SPINNER ── */
+.spin{width:32px;height:32px;border:2px solid rgba(255,255,255,.08);border-top-color:var(--a);border-radius:50%;animation:sp .7s linear infinite;}
+@keyframes sp{to{transform:rotate(360deg);}}
+
+/* ── AUTH ── */
+#pg-auth{min-height:100vh;display:flex;}
+.al{flex:1;background:#070e09;display:flex;flex-direction:column;justify-content:space-between;padding:3rem;position:relative;overflow:hidden;}
+@media(max-width:768px){.al{display:none;}}
+.al::before{content:'';position:absolute;top:-100px;right:-100px;width:400px;height:400px;border-radius:50%;background:rgba(0,255,135,.04);}
+.al::after{content:'';position:absolute;bottom:-80px;left:-80px;width:300px;height:300px;border-radius:50%;background:rgba(0,255,135,.03);}
+.al-logo{font-family:var(--D);font-size:2.2rem;letter-spacing:4px;color:var(--a);}
+.al-tag{color:rgba(255,255,255,.28);font-size:.7rem;text-transform:uppercase;letter-spacing:2px;margin-top:4px;}
+.al-mid{flex:1;display:flex;flex-direction:column;justify-content:center;}
+.al-h{font-family:var(--D);font-size:4.2rem;line-height:.93;letter-spacing:2px;margin-bottom:1.2rem;}
+.al-h span{color:var(--a);}
+.al-p{color:rgba(255,255,255,.38);font-size:.86rem;line-height:1.7;max-width:280px;}
+.feats{margin-top:2rem;display:flex;flex-direction:column;gap:10px;}
+.feat{display:flex;align-items:center;gap:10px;color:rgba(255,255,255,.45);font-size:.82rem;}
+.fdot{width:6px;height:6px;border-radius:50%;background:var(--a);opacity:.7;flex-shrink:0;}
+.al-foot{color:rgba(255,255,255,.15);font-size:.68rem;}
+
+.ar{width:460px;background:var(--s);display:flex;flex-direction:column;justify-content:center;padding:3rem 2.5rem;}
+@media(max-width:768px){.ar{width:100%;padding:2rem 1.5rem;}}
+.mob-logo{font-family:var(--D);font-size:1.8rem;letter-spacing:3px;color:var(--a);margin-bottom:.2rem;display:none;}
+@media(max-width:768px){.mob-logo{display:block;}}
+.aw{font-size:1.35rem;font-weight:500;margin-bottom:.25rem;}
+.as{font-size:.8rem;color:var(--m);margin-bottom:2rem;line-height:1.5;}
+.atabs{display:flex;background:var(--s2);border-radius:10px;padding:3px;gap:3px;margin-bottom:1.75rem;}
+.atab{flex:1;padding:.5rem;border:none;background:transparent;color:var(--m);font-family:var(--F);font-size:.82rem;font-weight:500;border-radius:8px;cursor:pointer;transition:all .2s;}
+.atab.on{background:var(--a);color:#000;}
+.fl{margin-bottom:.9rem;}
+.fl label{display:block;font-size:.66rem;color:var(--m);text-transform:uppercase;letter-spacing:.8px;margin-bottom:.32rem;}
+.fl input{
+  width:100%;padding:.72rem .9rem;background:var(--s2);
+  border:1px solid var(--b);border-radius:9px;
+  color:var(--t);font-family:var(--F);font-size:.87rem;
+  outline:none;transition:border-color .2s;
+}
+.fl input:focus{border-color:var(--a);}
+.fl input::placeholder{color:var(--m);}
+.auth-btn{
+  width:100%;padding:.8rem;background:var(--a);color:#000;
+  border:none;border-radius:9px;font-family:var(--F);
+  font-size:.88rem;font-weight:600;cursor:pointer;
+  margin-top:.3rem;letter-spacing:.4px;
+  transition:opacity .2s,transform .1s;
+}
+.auth-btn:hover{opacity:.88;}
+.auth-btn:active{transform:scale(.99);}
+.auth-btn:disabled{opacity:.5;cursor:not-allowed;}
+#auth-msg{font-size:.76rem;text-align:center;margin-top:.6rem;min-height:1.1em;line-height:1.4;}
+
+/* ── APP ── */
+#pg-app{display:none;min-height:100vh;}
+.topbar{
+  position:sticky;top:0;z-index:50;
+  background:rgba(10,10,15,.93);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--b);
+  padding:0 1.5rem;height:56px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.t-logo{font-family:var(--D);font-size:1.55rem;letter-spacing:2px;color:var(--a);}
+.t-right{display:flex;align-items:center;gap:.7rem;}
+.t-av{width:32px;height:32px;border-radius:50%;background:rgba(0,255,135,.14);display:flex;align-items:center;justify-content:center;font-size:.76rem;font-weight:600;color:var(--a);}
+.t-name{font-size:.78rem;color:var(--m);}
+@media(max-width:480px){.t-name{display:none;}}
+.t-out{background:transparent;border:1px solid var(--b);color:var(--m);padding:.26rem .7rem;border-radius:7px;font-family:var(--F);font-size:.74rem;cursor:pointer;transition:all .2s;}
+.t-out:hover{border-color:var(--a2);color:var(--a2);}
+
+.wrap{max-width:880px;margin:0 auto;padding:1.75rem 1.5rem;}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.85rem;margin-bottom:1.75rem;}
+.sc{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:1rem 1.1rem;}
+.sc-l{font-size:.62rem;color:var(--m);text-transform:uppercase;letter-spacing:.8px;margin-bottom:.3rem;}
+.sc-v{font-family:var(--D);font-size:1.9rem;letter-spacing:1px;line-height:1;}
+.sc-u{font-size:.68rem;color:var(--m);margin-top:.15rem;}
+.sc.g .sc-v{color:var(--a);}
+.sc.r .sc-v{color:var(--a2);}
+.sc.b .sc-v{color:#60a5fa;}
+.sc.y .sc-v{color:#fbbf24;}
+
+/* chart */
+.card{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:1.4rem;margin-bottom:1.75rem;}
+.sec{font-family:var(--D);font-size:1.2rem;letter-spacing:2px;margin-bottom:.9rem;}
+.bars{display:flex;align-items:flex-end;gap:5px;height:80px;}
+.bc{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end;}
+.bar{width:100%;border-radius:4px 4px 0 0;min-height:3px;background:rgba(0,255,135,.18);transition:height .35s;}
+.bar.today{background:var(--a);}
+.bday{font-size:.58rem;color:var(--m);text-transform:uppercase;}
+
+/* form */
+.pills{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.9rem;}
+.pill{padding:.28rem .78rem;border:1px solid var(--b);border-radius:50px;font-size:.74rem;color:var(--m);cursor:pointer;background:transparent;font-family:var(--F);transition:all .2s;}
+.pill.on{border-color:var(--a);color:var(--a);background:rgba(0,255,135,.07);}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:.85rem;margin-bottom:.85rem;}
+@media(max-width:540px){.fg{grid-template-columns:1fr;}}
+.fi label{display:block;font-size:.63rem;color:var(--m);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.28rem;}
+.fi input{
+  width:100%;padding:.65rem .85rem;background:var(--s2);
+  border:1px solid var(--b);border-radius:8px;
+  color:var(--t);font-family:var(--F);font-size:.84rem;
+  outline:none;transition:border-color .2s;
+}
+.fi input:focus{border-color:var(--a);}
+.add-btn{
+  width:100%;padding:.7rem;background:var(--a);color:#000;
+  border:none;border-radius:8px;font-family:var(--F);
+  font-size:.84rem;font-weight:600;cursor:pointer;
+  letter-spacing:.4px;transition:opacity .2s;
+}
+.add-btn:hover{opacity:.88;}
+.add-btn:disabled{opacity:.5;cursor:not-allowed;}
+
+/* log */
+.log-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem;flex-wrap:wrap;gap:.5rem;}
+.fps{display:flex;gap:.35rem;flex-wrap:wrap;}
+.fp{padding:.26rem .68rem;border:1px solid var(--b);border-radius:50px;font-size:.68rem;color:var(--m);cursor:pointer;background:transparent;font-family:var(--F);transition:all .2s;}
+.fp.on{background:var(--s2);border-color:rgba(255,255,255,.18);color:var(--t);}
+.wlist{display:flex;flex-direction:column;gap:.6rem;}
+.wi{
+  background:var(--s);border:1px solid var(--b);border-radius:var(--r);
+  padding:.9rem 1rem;display:flex;align-items:center;gap:.85rem;
+  animation:si .25s ease;transition:border-color .2s;
+}
+.wi:hover{border-color:rgba(255,255,255,.12);}
+@keyframes si{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:none;}}
+.wico{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+.win{flex:1;min-width:0;}
+.wn{font-weight:500;font-size:.86rem;margin-bottom:.1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.wm{font-size:.68rem;color:var(--m);}
+.wst{display:flex;gap:.75rem;flex-shrink:0;text-align:right;}
+.wsv{font-family:var(--D);font-size:1rem;color:var(--a);line-height:1.1;}
+.wsl{font-size:.56rem;color:var(--m);text-transform:uppercase;}
+.del{background:transparent;border:none;color:var(--m);cursor:pointer;padding:.28rem;border-radius:6px;transition:all .2s;font-size:.82rem;flex-shrink:0;}
+.del:hover{color:var(--a2);background:rgba(255,77,109,.1);}
+.empty{text-align:center;padding:2.5rem 1rem;color:var(--m);font-size:.85rem;}
+.eico{font-size:1.8rem;margin-bottom:.5rem;}
+
+/* toast */
+#toast{
+  position:fixed;bottom:1.5rem;left:50%;
+  transform:translateX(-50%) translateY(80px);
+  padding:.55rem 1.3rem;border-radius:50px;
+  font-weight:600;font-size:.78rem;
+  transition:transform .28s;z-index:300;pointer-events:none;
+}
+#toast.show{transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════
+     AUTH PAGE
+══════════════════════════════════ -->
+<div id="pg-auth">
+  <div class="al">
+    <div>
+      <div class="al-logo">FITPULSE</div>
+      <div class="al-tag">Your personal fitness companion</div>
+    </div>
+    <div class="al-mid">
+      <div class="al-h">TRACK.<br><span>TRAIN.</span><br>TRIUMPH.</div>
+      <div class="al-p">Log every workout, track calories and duration, and stay consistent with goals that actually stick.</div>
+      <div class="feats">
+        <div class="feat"><div class="fdot"></div>Log workouts in seconds</div>
+        <div class="feat"><div class="fdot"></div>Track calories &amp; duration</div>
+        <div class="feat"><div class="fdot"></div>Weekly activity charts</div>
+        <div class="feat"><div class="fdot"></div>Synced via Supabase</div>
+      </div>
+    </div>
+    <div class="al-foot">© 2025 FitPulse · Supabase + Vercel</div>
+  </div>
+
+  <div class="ar">
+    <div class="mob-logo">FITPULSE</div>
+    <div class="atabs">
+      <button class="atab on" id="tab-in" onclick="switchTab('in')">Sign In</button>
+      <button class="atab" id="tab-up" onclick="switchTab('up')">Sign Up</button>
+    </div>
+
+    <!-- Sign In -->
+    <div id="form-in">
+      <div class="aw">Welcome back 👋</div>
+      <div class="as">Sign in with your email and password.</div>
+      <div class="fl"><label>Email</label><input type="email" id="in-email" placeholder="you@email.com" autocomplete="email"></div>
+      <div class="fl"><label>Password</label><input type="password" id="in-pass" placeholder="••••••••" autocomplete="current-password"></div>
+      <button class="auth-btn" id="btn-in" onclick="doSignIn()">Sign In →</button>
+    </div>
+
+    <!-- Sign Up -->
+    <div id="form-up" style="display:none">
+      <div class="aw">Create account</div>
+      <div class="as">Sign up with your email and a password.</div>
+      <div class="fl"><label>Your name</label><input type="text" id="up-name" placeholder="Alex Smith" autocomplete="name"></div>
+      <div class="fl"><label>Email</label><input type="email" id="up-email" placeholder="you@email.com" autocomplete="email"></div>
+      <div class="fl"><label>Password <span style="color:var(--m);font-size:.6rem;text-transform:none;">(min 6 chars)</span></label><input type="password" id="up-pass" placeholder="••••••••" autocomplete="new-password"></div>
+      <button class="auth-btn" id="btn-up" onclick="doSignUp()">Create Account →</button>
+    </div>
+
+    <div id="auth-msg"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     APP PAGE
+══════════════════════════════════ -->
+<div id="pg-app">
+  <nav class="topbar">
+    <div class="t-logo">FITPULSE</div>
+    <div class="t-right">
+      <div class="t-av" id="t-av">?</div>
+      <div class="t-name" id="t-name">User</div>
+      <button class="t-out" onclick="doSignOut()">Sign Out</button>
+    </div>
+  </nav>
+
+  <div class="wrap">
+    <!-- Stats -->
+    <div class="stats">
+      <div class="sc g"><div class="sc-l">Total Workouts</div><div class="sc-v" id="s-total">0</div><div class="sc-u">sessions</div></div>
+      <div class="sc r"><div class="sc-l">Calories</div><div class="sc-v" id="s-cal">0</div><div class="sc-u">kcal burned</div></div>
+      <div class="sc b"><div class="sc-l">Duration</div><div class="sc-v" id="s-dur">0</div><div class="sc-u">total mins</div></div>
+      <div class="sc y"><div class="sc-l">This Week</div><div class="sc-v" id="s-week">0</div><div class="sc-u">sessions</div></div>
+    </div>
+
+    <!-- Chart -->
+    <div class="card">
+      <div class="sec">WEEKLY ACTIVITY</div>
+      <div class="bars" id="chart-bars"></div>
+    </div>
+
+    <!-- Log form -->
+    <div class="sec" style="margin-bottom:.9rem">LOG WORKOUT</div>
+    <div class="card">
+      <div class="pills" id="cat-pills">
+        <button class="pill on" data-c="Strength">💪 Strength</button>
+        <button class="pill" data-c="Cardio">🏃 Cardio</button>
+        <button class="pill" data-c="Yoga">🧘 Yoga</button>
+        <button class="pill" data-c="HIIT">⚡ HIIT</button>
+        <button class="pill" data-c="Cycling">🚴 Cycling</button>
+        <button class="pill" data-c="Swimming">🏊 Swimming</button>
+        <button class="pill" data-c="Other">🎯 Other</button>
+      </div>
+      <div class="fg">
+        <div class="fi"><label>Exercise name</label><input id="f-name" type="text" placeholder="e.g. Bench Press, 5K Run"></div>
+        <div class="fi"><label>Duration (mins)</label><input id="f-dur" type="number" placeholder="30" min="1" max="999"></div>
+        <div class="fi"><label>Calories burned</label><input id="f-cal" type="number" placeholder="200" min="0" max="9999"></div>
+        <div class="fi"><label>Date</label><input id="f-date" type="date"></div>
+      </div>
+      <div class="fi" style="margin-bottom:.85rem">
+        <label>Notes (optional)</label>
+        <input id="f-notes" type="text" placeholder="How did it feel? Any PBs?">
+      </div>
+      <button class="add-btn" id="add-btn" onclick="addWorkout()">+ Log This Workout</button>
+    </div>
+
+    <!-- Workout log -->
+    <div class="log-head">
+      <div class="sec" style="margin-bottom:0">WORKOUT LOG</div>
+      <div class="fps" id="filter-pills">
+        <button class="fp on" data-f="All">All</button>
+        <button class="fp" data-f="Strength">💪</button>
+        <button class="fp" data-f="Cardio">🏃</button>
+        <button class="fp" data-f="Yoga">🧘</button>
+        <button class="fp" data-f="HIIT">⚡</button>
+        <button class="fp" data-f="Cycling">🚴</button>
+        <button class="fp" data-f="Swimming">🏊</button>
+      </div>
+    </div>
+    <div class="wlist" id="workout-list">
+      <div class="empty"><div class="eico">🏋️</div>No workouts yet — log your first one above!</div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- ══════════════════════════════════
+     SUPABASE
+══════════════════════════════════ -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+
+/* ════════════════════════════════════════════
+   YOUR SUPABASE CREDENTIALS
+   Replace the two values below with yours from:
+   supabase.com → Project Settings → API
+   ════════════════════════════════════════════ */
+const SB_URL = 'https://xdycvcutkzqwpqohyjdr.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkeWN2Y3V0a3pxd3Bxb2h5amRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0NDA0OTQsImV4cCI6MjA5MTAxNjQ5NH0.AEMbP6bCmm3chK229_Hdy_gOr2tkQAijdbLIjVy0r_4';
+/* ════════════════════════════════════════════ */
+
+const sb = supabase.createClient(SB_URL, SB_KEY);
+
+let user = null;
+let workouts = [];
+let selCat   = 'Strength';
+let selFilt  = 'All';
+
+// Set today as default date
+document.getElementById('f-date').valueAsDate = new Date();
+
+/* ─────────────────────────────────
+   AUTH: check existing session on load
+───────────────────────────────── */
+(async () => {
+  const { data } = await sb.auth.getSession();
+  if (data.session) {
+    await enterApp(data.session.user);
+  }
+  // else: auth page is already visible by default
+})();
+
+sb.auth.onAuthStateChange(async (event, session) => {
+  if (event === 'SIGNED_IN')  await enterApp(session.user);
+  if (event === 'SIGNED_OUT') leaveApp();
+});
+
+/* ─────────────────────────────────
+   ENTER / LEAVE APP
+───────────────────────────────── */
+async function enterApp(u) {
+  user = u;
+  const name = u.user_metadata?.name || u.email.split('@')[0];
+  document.getElementById('t-name').textContent = name;
+  document.getElementById('t-av').textContent   = name[0].toUpperCase();
+  document.getElementById('pg-auth').style.display = 'none';
+  document.getElementById('pg-app').style.display  = 'block';
+  await loadWorkouts();
+}
+
+function leaveApp() {
+  user = null; workouts = [];
+  document.getElementById('pg-app').style.display  = 'none';
+  document.getElementById('pg-auth').style.display = 'flex';
+}
+
+/* ─────────────────────────────────
+   TAB SWITCH
+───────────────────────────────── */
+function switchTab(t) {
+  document.getElementById('tab-in').classList.toggle('on', t === 'in');
+  document.getElementById('tab-up').classList.toggle('on', t === 'up');
+  document.getElementById('form-in').style.display = t === 'in' ? 'block' : 'none';
+  document.getElementById('form-up').style.display = t === 'up' ? 'block' : 'none';
+  setMsg('', false);
+}
+
+/* ─────────────────────────────────
+   SIGN IN
+───────────────────────────────── */
+async function doSignIn() {
+  const email = document.getElementById('in-email').value.trim();
+  const pass  = document.getElementById('in-pass').value;
+
+  if (!email || !pass) { setMsg('Please enter your email and password.', true); return; }
+
+  const btn = document.getElementById('btn-in');
+  btn.disabled = true; btn.textContent = 'Signing in…';
+
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+
+  btn.disabled = false; btn.textContent = 'Sign In →';
+  if (error) setMsg(error.message, true);
+}
+
+/* ─────────────────────────────────
+   SIGN UP
+───────────────────────────────── */
+async function doSignUp() {
+  const name  = document.getElementById('up-name').value.trim();
+  const email = document.getElementById('up-email').value.trim();
+  const pass  = document.getElementById('up-pass').value;
+
+  if (!name)          { setMsg('Please enter your name.', true); return; }
+  if (!email)         { setMsg('Please enter your email.', true); return; }
+  if (pass.length < 6){ setMsg('Password must be at least 6 characters.', true); return; }
+
+  const btn = document.getElementById('btn-up');
+  btn.disabled = true; btn.textContent = 'Creating account…';
+
+  const { error } = await sb.auth.signUp({
+    email,
+    password: pass,
+    options: { data: { name } }
+  });
+
+  btn.disabled = false; btn.textContent = 'Create Account →';
+
+  if (error) {
+    setMsg(error.message, true);
+  } else {
+    setMsg('✓ Account created! You are now signed in.', false);
+  }
+}
+
+/* ─────────────────────────────────
+   SIGN OUT
+───────────────────────────────── */
+async function doSignOut() {
+  await sb.auth.signOut();
+  user = null;
+  workouts = [];
+  document.getElementById('pg-app').style.display  = 'none';
+  document.getElementById('pg-auth').style.display = 'flex';
+}
+
+/* ─────────────────────────────────
+   AUTH MESSAGE HELPER
+───────────────────────────────── */
+function setMsg(txt, isErr) {
+  const el = document.getElementById('auth-msg');
+  el.textContent = txt;
+  el.style.color = isErr ? '#ff4d6d' : '#00ff87';
+}
+
+/* ─────────────────────────────────
+   CATEGORY PILLS
+───────────────────────────────── */
+document.getElementById('cat-pills').addEventListener('click', e => {
+  const p = e.target.closest('.pill');
+  if (!p) return;
+  document.querySelectorAll('#cat-pills .pill').forEach(x => x.classList.remove('on'));
+  p.classList.add('on');
+  selCat = p.dataset.c;
+});
+
+/* ─────────────────────────────────
+   FILTER PILLS
+───────────────────────────────── */
+document.getElementById('filter-pills').addEventListener('click', e => {
+  const p = e.target.closest('.fp');
+  if (!p) return;
+  document.querySelectorAll('#filter-pills .fp').forEach(x => x.classList.remove('on'));
+  p.classList.add('on');
+  selFilt = p.dataset.f;
+  renderList();
+});
+
+/* ─────────────────────────────────
+   ADD WORKOUT
+───────────────────────────────── */
+async function addWorkout() {
+  const name  = document.getElementById('f-name').value.trim();
+  const dur   = parseInt(document.getElementById('f-dur').value)  || 0;
+  const cal   = parseInt(document.getElementById('f-cal').value)  || 0;
+  const date  = document.getElementById('f-date').value;
+  const notes = document.getElementById('f-notes').value.trim();
+
+  if (!name)  { toast('Enter an exercise name!', true);  return; }
+  if (!dur)   { toast('Enter the duration!', true);      return; }
+  if (!date)  { toast('Pick a date!', true);             return; }
+
+  const btn = document.getElementById('add-btn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+
+  try {
+    // 8 second timeout so it never hangs forever
+    const insertPromise = sb.from('workouts').insert({
+      user_id:  user.id,
+      name,
+      duration: dur,
+      calories: cal,
+      date,
+      notes,
+      category: selCat
+    });
+
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Request timed out — check your Supabase URL and anon key')), 8000)
+    );
+
+    const { error } = await Promise.race([insertPromise, timeoutPromise]);
+
+    btn.disabled = false; btn.textContent = '+ Log This Workout';
+
+    if (error) {
+      console.error('Supabase insert error:', error);
+      toast('ERROR: ' + error.message, true);
+      // Also show it permanently so you can read it
+      document.getElementById('workout-list').innerHTML =
+        `<div class="empty" style="color:#ff4d6d">
+          <div class="eico">⚠️</div>
+          <strong>Insert failed:</strong><br>${error.message}<br><br>
+          <small>Check F12 Console for full details</small>
+        </div>`;
+      return;
+    }
+
+    document.getElementById('f-name').value  = '';
+    document.getElementById('f-dur').value   = '';
+    document.getElementById('f-cal').value   = '';
+    document.getElementById('f-notes').value = '';
+    document.getElementById('f-date').valueAsDate = new Date();
+
+    toast('Workout logged! 💪');
+    await loadWorkouts();
+
+  } catch(e) {
+    btn.disabled = false; btn.textContent = '+ Log This Workout';
+    console.error('Caught error:', e);
+    toast('ERROR: ' + e.message, true);
+    document.getElementById('workout-list').innerHTML =
+      `<div class="empty" style="color:#ff4d6d">
+        <div class="eico">⚠️</div>
+        <strong>${e.message}</strong>
+      </div>`;
+  }
+}
+
+/* ─────────────────────────────────
+   LOAD WORKOUTS
+───────────────────────────────── */
+async function loadWorkouts() {
+  if (!user) return;
+
+  const { data, error } = await sb
+    .from('workouts')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false });
+
+  if (error) { toast(error.message, true); return; }
+
+  workouts = data || [];
+  renderList();
+  renderStats();
+  renderChart();
+}
+
+/* ─────────────────────────────────
+   DELETE WORKOUT
+───────────────────────────────── */
+async function deleteWorkout(id) {
+  if (!confirm('Delete this workout?')) return;
+  const { error } = await sb.from('workouts').delete().eq('id', id);
+  if (error) { toast(error.message, true); return; }
+  await loadWorkouts();
+}
+
+/* ─────────────────────────────────
+   RENDER WORKOUT LIST
+───────────────────────────────── */
+const catMeta = {
+  Strength: { icon:'💪', bg:'rgba(0,255,135,.11)' },
+  Cardio:   { icon:'🏃', bg:'rgba(255,77,109,.11)' },
+  Yoga:     { icon:'🧘', bg:'rgba(167,139,250,.14)' },
+  HIIT:     { icon:'⚡', bg:'rgba(251,191,36,.11)' },
+  Cycling:  { icon:'🚴', bg:'rgba(96,165,250,.11)' },
+  Swimming: { icon:'🏊', bg:'rgba(34,211,238,.11)' },
+  Other:    { icon:'🎯', bg:'rgba(255,255,255,.05)' }
+};
+
+function renderList() {
+  const el   = document.getElementById('workout-list');
+  const list = selFilt === 'All' ? workouts : workouts.filter(w => w.category === selFilt);
+
+  if (!list.length) {
+    el.innerHTML = `<div class="empty"><div class="eico">🏋️</div>${selFilt === 'All' ? 'No workouts yet — log your first one above!' : 'No ' + selFilt + ' workouts yet.'}</div>`;
+    return;
+  }
+
+  el.innerHTML = list.map(w => {
+    const m  = catMeta[w.category] || catMeta.Other;
+    const ds = w.date
+      ? new Date(w.date + 'T00:00:00').toLocaleDateString('en-IN', { day:'numeric', month:'short' })
+      : '';
+    return `
+      <div class="wi">
+        <div class="wico" style="background:${m.bg}">${m.icon}</div>
+        <div class="win">
+          <div class="wn">${w.name}</div>
+          <div class="wm">${w.category} · ${ds}${w.notes ? ' · ' + w.notes : ''}</div>
+        </div>
+        <div class="wst">
+          <div>
+            <div class="wsv">${w.duration}</div>
+            <div class="wsl">mins</div>
+          </div>
+          ${w.calories ? `<div><div class="wsv" style="color:#ff4d6d">${w.calories}</div><div class="wsl">kcal</div></div>` : ''}
+        </div>
+        <button class="del" onclick="deleteWorkout('${w.id}')">✕</button>
+      </div>`;
+  }).join('');
+}
+
+/* ─────────────────────────────────
+   RENDER STATS
+───────────────────────────────── */
+function renderStats() {
+  const now  = new Date();
+  const wkStart = new Date(now);
+  wkStart.setDate(now.getDate() - now.getDay());
+  wkStart.setHours(0,0,0,0);
+
+  document.getElementById('s-total').textContent = workouts.length;
+  document.getElementById('s-cal').textContent   = workouts.reduce((a,w) => a + (w.calories||0), 0).toLocaleString('en-IN');
+  document.getElementById('s-dur').textContent   = workouts.reduce((a,w) => a + (w.duration||0), 0);
+  document.getElementById('s-week').textContent  = workouts.filter(w => w.date && new Date(w.date + 'T00:00:00') >= wkStart).length;
+}
+
+/* ─────────────────────────────────
+   RENDER CHART
+───────────────────────────────── */
+function renderChart() {
+  const DAYS  = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const today = new Date().getDay();
+  const counts = Array(7).fill(0);
+  const now   = new Date();
+
+  workouts.forEach(w => {
+    if (!w.date) return;
+    const diff = Math.floor((now - new Date(w.date + 'T00:00:00')) / 86400000);
+    if (diff >= 0 && diff < 7) counts[6 - diff]++;
+  });
+
+  const max    = Math.max(...counts, 1);
+  const labels = Array.from({ length: 7 }, (_, i) => (today - 6 + i + 7) % 7);
+
+  document.getElementById('chart-bars').innerHTML = labels.map((dayIdx, i) => {
+    const h = Math.round((counts[i] / max) * 68) + 3;
+    return `<div class="bc">
+      <div class="bar${i === 6 ? ' today' : ''}" style="height:${h}px"></div>
+      <div class="bday">${DAYS[dayIdx]}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ─────────────────────────────────
+   TOAST
+───────────────────────────────── */
+function toast(msg, isErr = false) {
+  const el = document.getElementById('toast');
+  el.textContent       = msg;
+  el.style.background  = isErr ? '#ff4d6d' : '#00ff87';
+  el.style.color       = isErr ? '#fff'    : '#000';
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+</script>
+</body>
+</html>
